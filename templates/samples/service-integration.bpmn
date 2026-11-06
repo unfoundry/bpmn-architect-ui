@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Service" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_Service" isExecutable="false">
+    <bpmn:startEvent id="Start_1" name="Webhook Trigger">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_API" name="Call External API">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_Timer" name="Wait 5 Minutes">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Timer_1"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_Notify" name="Send Dispatch Notification">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_1" name="Success">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_API"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_API" targetRef="Event_Timer"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Event_Timer" targetRef="Task_Notify"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Notify" targetRef="End_1"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Service">
+      <bpmndi:BPMNShape id="_BPMNShape_Start_1" bpmnElement="Start_1">
+        <dc:Bounds x="130" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_Task_API" bpmnElement="Task_API">
+        <dc:Bounds x="220" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_Event_Timer" bpmnElement="Event_Timer">
+        <dc:Bounds x="392" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_Task_Notify" bpmnElement="Task_Notify">
+        <dc:Bounds x="480" y="80" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_End_1" bpmnElement="End_1">
+        <dc:Bounds x="662" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="166" y="120"/>
+        <di:waypoint x="220" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="340" y="120"/>
+        <di:waypoint x="392" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="428" y="120"/>
+        <di:waypoint x="480" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="610" y="120"/>
+        <di:waypoint x="662" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+

@@ -1,0 +1,35 @@
+{
+  "appName": "BPMN Architect",
+  "appSubtitle": "Collaborative Enterprise Process Modeler",
+  "appRoot": "/bpmn-architect-ui/",
+  "appLogoIcon": "assets/img/bpmn-architect-logo.svg",
+  "appLogoImage": "assets/img/bpmn-architect.svg",
+  "companyName": "Enterprise Operations",
+  "supportEmail": "support@enterprise.org",
+  "documentationUrl": "docs/README.md",
+
+  "endpoints": {
+    "serviceUrl": "http://127.0.0.1:8002",
+    "apiKey": "dev-master-key-12345",
+    "dataStaticServeUrl": "/diagram_storage",
+    "userInfoUrl": "assets/sample-data/user-info.json",
+    "templatesRegistryUrl": "templates/templates.json"
+  },
+
+  "auth": {
+    "masterKey": "dev-master-key-12345"
+  },
+
+  "features": {
+    "enableLocking": true,
+    "enableComments": true,
+    "enableDirectSvgExport": true,
+    "allowOfflineMode": true,
+    "autoSaveDrafts": true
+  },
+
+  "sessions": {
+    "heartbeatIntervalSec": 15,
+    "idleTimeoutMin": 15
+  }
+}

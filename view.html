@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to Viewer...</title>
+  <script>
+    const id = new URLSearchParams(window.location.search).get('id');
+    const target = 'view/' + (id ? '?id=' + encodeURIComponent(id) : '') + window.location.hash;
+    window.location.replace(target);
+  </script>
+</head>
+<body>Redirecting to Process Viewer...</body>
+</html>
+

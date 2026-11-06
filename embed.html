@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to Embed...</title>
+  <script>
+    const id = new URLSearchParams(window.location.search).get('id');
+    const target = 'embed/' + (id ? '?id=' + encodeURIComponent(id) : '') + window.location.hash;
+    window.location.replace(target);
+  </script>
+</head>
+<body>Redirecting to Embed View...</body>
+</html>
+

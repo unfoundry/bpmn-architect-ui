@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPMN Architect - Process Viewer</title>
+  <link rel="icon" href="../assets/img/bpmn-architect-logo.svg" type="image/svg+xml">
+
+  <!-- Vendor CSS (Local) -->
+  <link rel="stylesheet" href="../assets/vendor/bootswatch/lumen/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
+
+  <!-- BPMN.JS Diagram CSS -->
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/diagram-js.css">
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/bpmn-js.css">
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/bpmn-font/css/bpmn.css">
+
+  <link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Top Ribbon Header -->
+  <header class="ribbon-header">
+    <div class="d-flex align-items-center gap-3">
+      <a href="../" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Return to Library">
+        <i class="bi bi-arrow-left me-1"></i> Library
+      </a>
+      <div class="vr opacity-25"></div>
+      <a href="../" class="ribbon-brand text-decoration-none d-none d-sm-flex">
+        <img src="../assets/img/bpmn-architect.svg" alt="BPMN Architect" height="30" class="d-inline-block">
+      </a>
+      <div class="d-flex align-items-center gap-2 border-start ps-3">
+        <span id="header-diagram-name" class="fw-bold text-dark fs-6 text-truncate" style="max-width: 260px;" title="Loading Diagram...">Loading Diagram...</span>
+        <span class="badge bg-light text-secondary border"><i class="bi bi-eye me-1"></i>Viewer</span>
+        <span id="header-offline-badge" class="badge bg-light text-muted border d-none" title="Connected via static storage. Microservice is offline.">
+          <i class="bi bi-cloud-slash text-secondary me-1"></i>API service offline
+        </span>
+      </div>
+    </div>
+
+    <!-- Viewer Actions -->
+    <div class="d-flex align-items-center gap-2">
+      <button class="tool-btn" onclick="viewApp.viewer.fitViewport()" title="Auto-Fit">
+        <i class="bi bi-arrows-fullscreen"></i> Auto-Fit
+      </button>
+      <button class="tool-btn" onclick="viewApp.viewer.zoomIn()" title="Zoom In">
+        <i class="bi bi-zoom-in"></i>
+      </button>
+      <button class="tool-btn" onclick="viewApp.viewer.zoomOut()" title="Zoom Out">
+        <i class="bi bi-zoom-out"></i>
+      </button>
+      <button class="tool-btn" onclick="viewApp.toggleGrid()" title="Toggle Grid">
+        <i class="bi bi-grid-3x3"></i>
+      </button>
+
+      <div class="dropdown">
+        <button class="tool-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-download"></i> Export
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+          <li><a class="dropdown-item small" href="#" onclick="viewApp.downloadBpmn(); return false;"><i class="bi bi-file-earmark-code me-2 text-primary"></i> Download .bpmn</a></li>
+          <li><a class="dropdown-item small" href="#" onclick="viewApp.downloadSvg(); return false;"><i class="bi bi-image me-2 text-primary"></i> Export as SVG</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item small" id="embed-view-link" href="#" target="_blank"><i class="bi bi-fullscreen me-2 text-info"></i> Open Embed View</a></li>
+        </ul>
+      </div>
+
+      <div class="vr opacity-25 mx-1"></div>
+
+      <!-- Prominent Edit Process Button -->
+      <a id="btn-edit-process" href="#" class="btn btn-primary btn-sm px-3 fw-bold">
+        <i class="bi bi-pencil-square me-1"></i> Edit Process
+      </a>
+
+      <div id="navbar-user-display" class="ms-2 d-none d-lg-block"></div>
+    </div>
+  </header>
+
+  <!-- Viewer Workspace -->
+  <div class="workspace-wrapper-full">
+    <!-- Collapsible Metadata Sidebar -->
+    <aside class="process-sidebar" id="view-sidebar">
+      <div class="sidebar-header">
+        <span class="small fw-bold text-uppercase text-muted"><i class="bi bi-info-circle me-1"></i> Process Information</span>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="sidebar-section-title">Process Category</label>
+        <div id="view-meta-project" class="fw-semibold text-secondary small mb-3 text-truncate" title="">-</div>
+
+        <label class="sidebar-section-title">Flow Name</label>
+        <div id="view-meta-friendly" class="fw-bold text-dark fs-6 mb-3 text-break-wrap" style="max-height: 120px; overflow-y: auto;" title="">-</div>
+
+        <label class="sidebar-section-title">Description</label>
+        <div id="view-meta-description" class="small text-muted mb-0 description-box">No description provided.</div>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="sidebar-section-title">Lock & Collaboration</label>
+        <div id="view-lock-status">
+          <span class="badge bg-light text-secondary border"><i class="bi bi-unlock me-1"></i> Available to edit</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section mt-auto">
+        <div class="small text-muted mb-1 text-truncate">Author: <strong id="view-meta-author" class="text-dark">-</strong></div>
+        <div class="small text-muted mb-3 text-truncate">Last Edited: <strong id="view-meta-updated" class="text-dark">-</strong></div>
+        <a id="sidebar-edit-btn" href="#" class="btn btn-outline-primary btn-sm w-100 fw-bold">
+          <i class="bi bi-pencil-square me-1"></i> Open in Editor
+        </a>
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <section class="canvas-area with-grid flex-grow-1">
+      <div id="bpmn-canvas"></div>
+    </section>
+  </div>
+
+  <!-- Static Status Footer -->
+  <footer class="excel-statusbar mt-auto d-flex align-items-center justify-content-between px-3">
+    <span class="small text-muted">
+      <i class="bi bi-eye text-primary me-1"></i> Read-Only View
+      <span id="footer-offline-note" class="text-secondary ms-2 d-none">&bull; <i class="bi bi-hdd-network me-1"></i>Static storage mode (API service offline)</span>
+    </span>
+    <span class="small text-muted">Powered by <strong>BPMN Architect Service</strong></span>
+  </footer>
+
+  <!-- Vendor Scripts -->
+  <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+
+  <!-- BPMN Navigated Viewer Script (Lightweight ~187KB) -->
+  <script src="../assets/vendor/bpmn-js/bpmn-navigated-viewer.production.min.js"></script>
+
+  <!-- Application Modules -->
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/api-client.js"></script>
+  <script src="../assets/js/viewer.js"></script>
+
+  <script>
+    class ViewPageApp {
+      constructor() {
+        this.api = null;
+        this.viewer = null;
+        this.diagramId = null;
+        this.metadata = null;
+      }
+
+      async init() {
+        const config = await window.BPMN_APP.loadConfig();
+        this.api = new BPMNApiClient(config);
+
+        this.diagramId = window.BPMN_APP.getQueryParam("id");
+        if (!this.diagramId) {
+          Swal.fire({
+            icon: "error",
+            title: "No Diagram Specified",
+            text: "Missing 'id' query parameter. Returning to library.",
+          }).then(() => window.location.href = "../");
+          return;
+        }
+
+        // Set edit & embed links
+        const editUrl = `../edit/?id=${encodeURIComponent(this.diagramId)}`;
+        const embedUrl = `../embed/?id=${encodeURIComponent(this.diagramId)}`;
+        document.getElementById("btn-edit-process").href = editUrl;
+        document.getElementById("sidebar-edit-btn").href = editUrl;
+        document.getElementById("embed-view-link").href = embedUrl;
+
+        // Init viewer
+        const canvasContainer = document.getElementById("bpmn-canvas");
+        this.viewer = new BPMNViewerWrapper(canvasContainer);
+
+        await this.loadDiagram();
+      }
+
+      async loadDiagram() {
+        try {
+          // Fetch XML (supports high-availability static filestore fallback!)
+          const xml = await this.api.fetchDiagramXml(this.diagramId);
+          await this.viewer.loadXml(xml);
+
+          // Fetch metadata & lock status (falls back to static {id}.json or recents cache)
+          this.metadata = await this.api.fetchDiagramMetadata(this.diagramId).catch(() => ({
+            id: this.diagramId,
+            friendly_name: this.diagramId,
+            project_name: "Static Diagram",
+            project_description: "",
+            author: "Unknown",
+            updated_at: null,
+            _isStaticFallback: true
+          }));
+
+          if (this.metadata) {
+            this.renderMetadata(this.metadata);
+          }
+        } catch (err) {
+          console.warn("[ViewApp] Could not load diagram XML:", err);
+          const canvas = document.getElementById("bpmn-canvas");
+          if (canvas) {
+            canvas.innerHTML = `
+              <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted p-4 text-center">
+                <i class="bi bi-file-earmark-x fs-1 text-secondary mb-2"></i>
+                <h5 class="fw-bold text-dark">Diagram Unavailable</h5>
+                <p class="small text-muted mb-3" style="max-width: 420px;">
+                  The diagram could not be retrieved from the API service or static filestore storage.
+                </p>
+                <a href="../" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-left me-1"></i> Return to Library</a>
+              </div>
+            `;
+          }
+        }
+      }
+
+      renderMetadata(meta) {
+        const displayName = meta.friendly_name || meta.id;
+        const headerNameEl = document.getElementById("header-diagram-name");
+        headerNameEl.innerText = displayName;
+        headerNameEl.title = displayName;
+        document.title = `${displayName} - BPMN Architect`;
+
+        const projectEl = document.getElementById("view-meta-project");
+        projectEl.innerText = meta.project_name || "Uncategorized";
+        projectEl.title = meta.project_name || "Uncategorized";
+
+        const friendlyEl = document.getElementById("view-meta-friendly");
+        friendlyEl.innerText = displayName;
+        friendlyEl.title = displayName;
+
+        document.getElementById("view-meta-description").innerText = meta.project_description || "No description provided.";
+        document.getElementById("view-meta-author").innerText = meta.author || "Unknown";
+
+        // Relative timestamp formatting (...ago) with full hover tooltip
+        const updatedEl = document.getElementById("view-meta-updated");
+        if (meta.updated_at) {
+          const rel = window.BPMN_APP ? window.BPMN_APP.timeAgo(meta.updated_at) : meta.updated_at;
+          const full = new Date(meta.updated_at).toLocaleString();
+          updatedEl.innerText = rel;
+          updatedEl.title = full;
+          updatedEl.style.cursor = "help";
+        } else {
+          updatedEl.innerText = "-";
+          updatedEl.title = "";
+        }
+
+        // Graceful handling when API is offline / static fallback
+        const isOffline = Boolean(this.api.isOffline || meta._isStaticFallback);
+        const offlineBadge = document.getElementById("header-offline-badge");
+        const footerOffline = document.getElementById("footer-offline-note");
+        const editBtn = document.getElementById("btn-edit-process");
+        const sidebarEditBtn = document.getElementById("sidebar-edit-btn");
+        const lockContainer = document.getElementById("view-lock-status");
+
+        if (isOffline) {
+          if (offlineBadge) offlineBadge.classList.remove("d-none");
+          if (footerOffline) footerOffline.classList.remove("d-none");
+          if (editBtn) {
+            editBtn.classList.remove("btn-primary");
+            editBtn.classList.add("btn-outline-primary");
+            editBtn.title = "API service offline. Editor will attempt reconnection.";
+          }
+          if (sidebarEditBtn) {
+            sidebarEditBtn.classList.remove("btn-outline-primary");
+            sidebarEditBtn.classList.add("btn-outline-secondary");
+          }
+          if (lockContainer) {
+            lockContainer.innerHTML = `
+              <span class="badge bg-light text-muted border py-1">
+                <i class="bi bi-cloud-slash text-secondary me-1"></i> API service offline (Read-Only)
+              </span>
+              <div class="text-muted mt-1" style="font-size: 0.72rem;">Editing lock coordination is unavailable.</div>
+            `;
+          }
+        } else {
+          if (offlineBadge) offlineBadge.classList.add("d-none");
+          if (footerOffline) footerOffline.classList.add("d-none");
+          if (editBtn) {
+            editBtn.classList.remove("btn-outline-primary");
+            editBtn.classList.add("btn-primary");
+            editBtn.title = "";
+          }
+
+          if (lockContainer) {
+            if (meta.locked_by) {
+              lockContainer.innerHTML = `
+                <span class="badge bg-warning text-dark"><i class="bi bi-lock-fill me-1"></i> Being edited by ${meta.locked_by}</span>
+              `;
+            } else {
+              lockContainer.innerHTML = `
+                <span class="badge bg-success-subtle text-success border"><i class="bi bi-unlock me-1"></i> Available to edit</span>
+              `;
+            }
+          }
+        }
+      }
+
+      toggleGrid() {
+        document.querySelector(".canvas-area")?.classList.toggle("with-grid");
+      }
+
+      async downloadBpmn() {
+        const xml = await this.viewer.exportXml();
+        const blob = new Blob([xml], { type: "application/xml" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const name = (this.metadata && this.metadata.friendly_name) || this.diagramId;
+        a.download = `${name.replace(/[^a-z0-9_-]/gi, "_")}.bpmn`;
+        a.click();
+      }
+
+      async downloadSvg() {
+        const svg = await this.viewer.exportSvg();
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const name = (this.metadata && this.metadata.friendly_name) || this.diagramId;
+        a.download = `${name.replace(/[^a-z0-9_-]/gi, "_")}.svg`;
+        a.click();
+      }
+    }
+
+    const viewApp = new ViewPageApp();
+    document.addEventListener("DOMContentLoaded", () => viewApp.init());
+  </script>
+</body>
+</html>
+

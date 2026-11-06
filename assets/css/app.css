@@ -1,0 +1,471 @@
+/* ==============================================================================
+   BPMN ARCHITECT - ENTERPRISE STYLESHEET (BOOTSWATCH LUMEN THEME EXTENSIONS)
+   ==============================================================================
+   Matches Bootswatch Lumen design language: Crisp white surfaces, subtle borders,
+   clean typography, responsive ribbons, and focused toolbars.
+   Zero external fonts or CDN stylesheets required.
+   ============================================================================== */
+
+:root {
+  --app-primary: #158cba;       /* Lumen primary teal-blue */
+  --app-primary-hover: #127ba3;
+  --app-bg: #f8f9fa;
+  --app-surface: #ffffff;
+  --app-border: #e9ecef;
+  --app-text: #333333;
+  --app-text-muted: #777777;
+  --app-danger: #ff4136;
+  --app-success: #28b62c;
+  --app-warning: #ff851b;
+  --ribbon-height: 52px;
+  --toolbar-height: 44px;
+  --footer-height: 28px;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Static Bottom Status Bar (Excel-style) */
+.excel-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.2rem 1.25rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  height: var(--footer-height);
+  min-height: var(--footer-height);
+  z-index: 1020;
+}
+
+/* ------------------------------------------------------------------------------
+   1. TOP RIBBON HEADER (Excel / Office inspired clean bar)
+   ------------------------------------------------------------------------------ */
+.ribbon-header {
+  height: var(--ribbon-height);
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 1020;
+}
+
+.ribbon-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ribbon-brand-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--app-primary) 0%, #0d5f8a 100%);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Dirty State Indicator Badge */
+.dirty-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.dirty-indicator.clean {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.dirty-indicator.dirty {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.dirty-indicator.saving {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+/* Lock Status Badge */
+.lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+}
+
+.lock-badge.locked-self {
+  background-color: #e8f8f5;
+  color: #0e6251;
+  border: 1px solid #a3e4d7;
+}
+
+.lock-badge.locked-other {
+  background-color: #fef9e7;
+  color: #7d6608;
+  border: 1px solid #f9e79f;
+}
+
+.lock-badge.unlocked {
+  background-color: #f4f6f7;
+  color: #566573;
+  border: 1px solid #d5dbdb;
+}
+
+/* ------------------------------------------------------------------------------
+   2. ACTION TOOLBAR
+   ------------------------------------------------------------------------------ */
+.editor-toolbar {
+  height: var(--toolbar-height);
+  background: #fdfdfd;
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+.tool-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #495057;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.tool-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.tool-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------------------
+   3. WORKSPACE LAYOUT (Sidebar + BPMN Canvas)
+   ------------------------------------------------------------------------------ */
+.workspace-wrapper {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - var(--ribbon-height) - var(--toolbar-height) - var(--footer-height));
+  overflow: hidden;
+  position: relative;
+}
+
+.workspace-wrapper-full {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - var(--ribbon-height) - var(--footer-height));
+  overflow: hidden;
+  position: relative;
+}
+
+/* Process Metadata & Toolbox Sidebar */
+.process-sidebar {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  flex: 0 0 320px;
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-border);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  z-index: 40;
+}
+
+.process-sidebar.collapsed {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  flex: 0 0 48px;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fbfbfb;
+}
+
+.sidebar-section {
+  padding: 1rem;
+  border-bottom: 1px solid var(--app-border);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.sidebar-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--app-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Text Truncation, Wrapping, & Scrollable Description Box */
+.text-break-wrap {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+.description-box {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow-y: auto;
+  line-height: 1.5;
+  padding: 0.5rem 0.65rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
+
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+  margin-bottom: 0.5rem;
+}
+
+/* Extended BPMN Quick Tools in Sidebar */
+.quick-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.quick-tool-card {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.quick-tool-card:hover {
+  background: #eef7fc;
+  border-color: var(--app-primary);
+  color: var(--app-primary);
+  transform: translateY(-1px);
+}
+
+.quick-tool-card i {
+  font-size: 1.1rem;
+}
+
+/* Main BPMN Canvas Area */
+.canvas-area {
+  flex: 1;
+  background: #fdfdfd;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+#bpmn-canvas {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  position: relative;
+}
+
+/* Ensure BPMN-JS Native Palette is prominently visible and draggable */
+.djs-palette {
+  position: absolute !important;
+  left: 20px !important;
+  top: 20px !important;
+  z-index: 50 !important;
+  background: #ffffff !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+.djs-palette .entry {
+  cursor: pointer !important;
+}
+
+/* Subtle Canvas Grid Background */
+.canvas-area.with-grid {
+  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ------------------------------------------------------------------------------
+   4. CONNECTION & LOCK STATUS OVERLAY FOR /edit/
+   ------------------------------------------------------------------------------ */
+.editor-status-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.editor-status-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.overlay-card {
+  max-width: 520px;
+  width: 90%;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------------------
+   5. DASHBOARD & PROCESS LIBRARY VIEW
+   ------------------------------------------------------------------------------ */
+.dashboard-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  background: var(--app-bg);
+}
+
+.dashboard-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.process-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+}
+
+.process-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.process-preview-box {
+  height: 140px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--app-border);
+  overflow: hidden;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.process-preview-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.process-card:hover .process-preview-box img {
+  transform: scale(1.02);
+}
+
+/* Pulse animation for active connected states */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-success);
+  display: inline-block;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 182, 44, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(40, 182, 44, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 182, 44, 0); }
+}

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BPMN Architect - Collaborative Enterprise Process Modeler">
+  <title>BPMN Architect - Process Library</title>
+  <link rel="icon" href="assets/img/bpmn-architect-logo.svg" type="image/svg+xml">
+
+  <!-- Vendor CSS (Offline Local Copies) -->
+  <link rel="stylesheet" href="assets/vendor/bootswatch/lumen/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="assets/vendor/sweetalert2/sweetalert2.min.css">
+
+  <!-- Custom Enterprise Stylesheet -->
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- =========================================================================
+       1. TOP RIBBON HEADER
+       ========================================================================= -->
+  <header class="ribbon-header">
+    <div class="d-flex align-items-center gap-3">
+      <a href="./" class="ribbon-brand text-decoration-none">
+        <img src="assets/img/bpmn-architect.svg" alt="BPMN Architect" height="32" class="d-inline-block">
+        <span id="app-brand-subtitle" class="small d-none text-muted fw-normal d-none d-md-inline ms-2 border-start ps-2" style="font-size:0.75rem;">
+          Collaborative Process Modeler
+        </span>
+      </a>
+      <div class="d-none d-md-flex align-items-center gap-2 border-start ps-3">
+        <span class="fw-semibold text-secondary small">Library</span>
+      </div>
+    </div>
+
+    <!-- Right Header Actions (User Pill + New Process Button) -->
+    <div class="d-flex align-items-center gap-3">
+      <div id="navbar-user-display">
+        <!-- Rendered dynamically by common.js -->
+      </div>
+      <button class="btn btn-primary btn-sm px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#newDiagramModal">
+        <i class="bi bi-plus-lg me-1"></i> New Process
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. PROCESS ARCHITECTURE LIBRARY (DASHBOARD)
+       ========================================================================= -->
+  <main class="dashboard-view">
+    <div class="dashboard-container">
+      <!-- Welcome Hero Banner -->
+      <div class="card bg-white border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div>
+            <h4 class="fw-bold mb-1 text-dark">Process Architecture Library</h4>
+            <p class="text-muted small mb-0">Central repository for enterprise business workflows, automation diagrams, and live collaboration.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm shadow-sm" style="width: 290px;">
+              <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-search"></i></span>
+              <input type="text" id="search-diagrams-input" class="form-control border-start-0" placeholder="Search processes...">
+            </div>
+            <button class="btn btn-sm btn-light border text-primary shadow-sm" onclick="libraryApp.refresh()" title="Refresh Library">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagram Cards Grid -->
+      <div class="row" id="diagrams-list-container">
+        <div class="text-center py-5 text-muted">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Loading diagram library...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       3. STATIC STATUS FOOTER
+       ========================================================================= -->
+  <footer class="excel-statusbar mt-auto d-flex align-items-center justify-content-between px-3">
+    <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i> Ready</span>
+    <span class="small text-muted">Powered by <strong>BPMN Architect Service</strong></span>
+  </footer>
+
+  <!-- =========================================================================
+       3. MODAL: CREATE NEW PROCESS (Template Gallery & File Upload)
+       ========================================================================= -->
+  <div class="modal fade" id="newDiagramModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle text-primary me-2"></i> Create New Process Flow</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold small">Flow Name <span class="text-danger">*</span></label>
+              <input type="text" id="new-flow-name" class="form-control" placeholder="e.g. Employee Onboarding" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small">Process / Department</label>
+              <input type="text" id="new-project-name" class="form-control" placeholder="e.g. Human Resources">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small">Brief Description</label>
+              <input type="text" id="new-project-desc" class="form-control" placeholder="High-level summary of process goals...">
+            </div>
+          </div>
+
+          <h6 class="fw-bold small text-uppercase text-muted mb-3">Choose Starting Template</h6>
+          <div class="row" id="modal-templates-container">
+            <!-- Rendered dynamically from templates/templates.json -->
+          </div>
+
+          <hr class="my-3">
+          <div class="mb-3">
+            <label class="form-label fw-bold small"><i class="bi bi-upload me-1"></i> Or Upload Existing BPMN 2.0 XML File</label>
+            <input type="file" id="new-diagram-upload" class="form-control form-control-sm" accept=".bpmn,.xml">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm fw-bold px-4" onclick="libraryApp.createNewDiagram()">
+            <i class="bi bi-check2 me-1"></i> Create Process
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Scripts -->
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+
+  <!-- App Scripts -->
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/api-client.js"></script>
+  <script>
+    class LibraryApp {
+      constructor() {
+        this.api = null;
+        this.selectedTemplateFile = null;
+        this.diagrams = [];
+        this.isOffline = false;
+      }
+
+      async init() {
+        const config = await window.BPMN_APP.loadConfig();
+        this.api = new BPMNApiClient(config);
+        this.loadTemplates();
+        await this.refresh();
+
+        document.getElementById("search-diagrams-input")?.addEventListener("input", () => this.render());
+      }
+
+      async loadTemplates() {
+        const templates = await this.api.fetchTemplatesRegistry();
+        const container = document.getElementById("modal-templates-container");
+        if (!container) return;
+        container.innerHTML = templates.map((t, idx) => `
+          <div class="col-md-6 mb-3">
+            <div class="card h-100 template-card p-3 cursor-pointer ${idx === 0 ? 'border-primary bg-light' : ''}" 
+                 data-file="${t.file}" onclick="libraryApp.selectTemplate(this, '${t.file}')">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi ${t.icon || 'bi-diagram-2'} text-primary fs-4"></i>
+                <h6 class="mb-0 fw-bold">${t.name}</h6>
+              </div>
+              <p class="small text-muted mb-0">${t.description}</p>
+            </div>
+          </div>
+        `).join("");
+        if (templates.length > 0) {
+          this.selectedTemplateFile = templates[0].file;
+        }
+      }
+
+      selectTemplate(element, file) {
+        document.querySelectorAll(".template-card").forEach(c => c.classList.remove("border-primary", "bg-light"));
+        element.classList.add("border-primary", "bg-light");
+        this.selectedTemplateFile = file;
+      }
+
+      async refresh() {
+        const container = document.getElementById("diagrams-list-container");
+        container.innerHTML = `
+          <div class="text-center py-5 text-muted">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <div>Loading diagram library...</div>
+          </div>
+        `;
+
+        const onlineDiagrams = await this.api.fetchDiagrams();
+
+        if (onlineDiagrams !== null) {
+          // Connected online: sync recents cache with live records
+          this.diagrams = onlineDiagrams;
+          this.isOffline = false;
+          this.diagrams.forEach(d => {
+            if (window.BPMN_APP && window.BPMN_APP.recordRecentDiagram) {
+              window.BPMN_APP.recordRecentDiagram(d);
+            }
+          });
+        } else {
+          // Offline Fallback: load recently visited diagram manifest from localStorage
+          this.isOffline = true;
+          this.diagrams = window.BPMN_APP ? window.BPMN_APP.getRecentDiagrams() : [];
+        }
+
+        this.render();
+      }
+
+      removeRecent(id, event) {
+        if (event) event.stopPropagation();
+        if (window.BPMN_APP && window.BPMN_APP.removeRecentDiagram) {
+          this.diagrams = window.BPMN_APP.removeRecentDiagram(id);
+          this.render();
+        }
+      }
+
+      render() {
+        const container = document.getElementById("diagrams-list-container");
+        const term = (document.getElementById("search-diagrams-input")?.value || "").toLowerCase().trim();
+        const filtered = this.diagrams.filter(d => 
+          !term ||
+          (d.friendly_name && d.friendly_name.toLowerCase().includes(term)) ||
+          (d.project_name && d.project_name.toLowerCase().includes(term))
+        );
+
+        let html = "";
+
+        // If in offline mode, display high-availability static storage banner
+        if (this.isOffline) {
+          html += `
+            <div class="col-12 mb-4">
+              <div class="card border-0 shadow-sm" style="background: #eef7fc; border-left: 4px solid var(--app-primary) !important;">
+                <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-hdd-network text-primary fs-3"></i>
+                    <div>
+                      <h6 class="fw-bold mb-1 text-dark">Offline / Static Storage Mode</h6>
+                      <p class="small text-muted mb-0">API service is unreachable. Showing your recently visited diagrams served directly from static filestore.</p>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="libraryApp.refresh()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Retry API Connection
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        if (filtered.length === 0) {
+          html += `
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
+              <h5 class="mt-3 text-secondary">${this.isOffline ? "No Recently Visited Diagrams in Cache" : "No Process Diagrams Found"}</h5>
+              <p class="text-muted small">${this.isOffline ? "Visit or create a diagram while connected to see it listed here offline." : "Create your first diagram using a template or upload an existing .bpmn file."}</p>
+              ${!this.isOffline ? `
+              <button class="btn btn-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#newDiagramModal">
+                <i class="bi bi-plus-lg me-1"></i> Create Process
+              </button>` : ""}
+            </div>
+          `;
+          container.innerHTML = html;
+          return;
+        }
+
+        html += filtered.map(d => {
+          const isLocked = Boolean(d.locked_by);
+          const lockBadge = isLocked 
+            ? `<span class="badge bg-warning text-dark"><i class="bi bi-lock me-1"></i>Locked by ${d.locked_by}</span>`
+            : `<span class="badge bg-light text-secondary border"><i class="bi bi-unlock me-1"></i>Available</span>`;
+
+          // If offline, use dataStaticServeUrl directly; otherwise use API endpoint
+          const previewUrl = this.isOffline && this.api.dataStaticServeUrl
+            ? `${this.api.dataStaticServeUrl.replace(/\/$/, '')}/${encodeURIComponent(d.id)}.svg`
+            : `${this.api.baseUrl}/api/diagram/${encodeURIComponent(d.id)}/svg`;
+
+          const viewLink = `view/?id=${encodeURIComponent(d.id)}`;
+          const editLink = `edit/?id=${encodeURIComponent(d.id)}`;
+
+          const dismissBtn = this.isOffline
+            ? `<button class="btn btn-link text-muted p-0 ms-2" title="Remove from recents" onclick="libraryApp.removeRecent('${d.id}', event)"><i class="bi bi-x-circle"></i></button>`
+            : "";
+
+          const timeStr = d.updated_at
+            ? (window.BPMN_APP ? window.BPMN_APP.timeAgo(d.updated_at) : d.updated_at)
+            : (d.last_visited && window.BPMN_APP ? window.BPMN_APP.timeAgo(d.last_visited) : "");
+          const fullTime = d.updated_at ? new Date(d.updated_at).toLocaleString() : "";
+          const authorStr = d.last_edited_by || d.author || "Unknown";
+
+          return `
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 process-card shadow-sm">
+                <div class="process-preview-box" onclick="window.location.href='${viewLink}'" title="Click to view diagram">
+                  <img src="${previewUrl}" alt="${d.friendly_name}" onerror="this.onerror=null; this.src='assets/img/bpmn-architect-logo.svg'; this.style.opacity=0.35; this.style.width='52px';">
+                </div>
+                <div class="card-body p-3 d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title fw-bold text-truncate mb-0" style="max-width: 200px;" title="${d.friendly_name}">
+                      <a href="${viewLink}" class="text-dark text-decoration-none">${d.friendly_name}</a>
+                    </h6>
+                    <div class="d-flex align-items-center">
+                      ${lockBadge}
+                      ${dismissBtn}
+                    </div>
+                  </div>
+                  <p class="small text-muted mb-2 text-truncate" title="${d.project_name || 'Uncategorized Process'}">${d.project_name || "Uncategorized Process"}</p>
+                  <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted text-truncate me-2" style="font-size: 0.72rem; max-width: 170px;" title="${authorStr}${fullTime ? ' &bull; ' + fullTime : ''}">
+                      <i class="bi bi-person me-1"></i>${authorStr}${timeStr ? ` &bull; ${timeStr}` : ''}
+                    </span>
+                    <div class="btn-group btn-group-sm">
+                      <a href="${viewLink}" class="btn btn-primary btn-sm px-3 fw-bold">
+                        <i class="bi bi-eye me-1"></i> View
+                      </a>
+                      <a href="${editLink}" class="btn btn-outline-primary btn-sm" title="Edit Process">
+                        <i class="bi bi-pencil-square"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        container.innerHTML = html;
+      }
+
+      async createNewDiagram() {
+        const friendlyName = document.getElementById("new-flow-name").value.trim();
+        const projectName = document.getElementById("new-project-name").value.trim();
+        const projectDesc = document.getElementById("new-project-desc").value.trim();
+        const uploadInput = document.getElementById("new-diagram-upload");
+
+        if (!friendlyName) {
+          Swal.fire({ icon: "warning", title: "Name Required", text: "Please enter a flow name." });
+          return;
+        }
+
+        let initialXml = null;
+        if (uploadInput && uploadInput.files && uploadInput.files[0]) {
+          initialXml = await uploadInput.files[0].text();
+        } else if (this.selectedTemplateFile) {
+          initialXml = await this.api.fetchTemplateXml(this.selectedTemplateFile).catch(() => null);
+        }
+
+        try {
+          const res = await this.api.createDiagram(friendlyName, projectName, projectDesc, initialXml);
+          const modalEl = document.getElementById("newDiagramModal");
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+
+          // Navigate directly to the editor for the new diagram
+          window.location.href = `edit/?id=${encodeURIComponent(res.id)}`;
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "Creation Failed", text: err.message });
+        }
+      }
+    }
+
+    const libraryApp = new LibraryApp();
+    document.addEventListener("DOMContentLoaded", () => libraryApp.init());
+  </script>
+</body>
+</html>

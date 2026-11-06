@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPMN Architect - Embed Viewer</title>
+  <link rel="icon" href="../assets/img/bpmn-architect-logo.svg" type="image/svg+xml">
+
+  <!-- Local Vendor CSS -->
+  <link rel="stylesheet" href="../assets/vendor/bootswatch/lumen/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+
+  <!-- BPMN.JS Diagram CSS -->
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/diagram-js.css">
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/bpmn-js.css">
+  <link rel="stylesheet" href="../assets/vendor/bpmn-js/assets/bpmn-font/css/bpmn.css">
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #bpmn-canvas {
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+    .floating-embed-bar {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 4px 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+    }
+    .embed-btn {
+      background: transparent;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #495057;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+    .embed-btn:hover {
+      background: #e9ecef;
+      color: #212529;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Interactive Canvas -->
+  <div id="bpmn-canvas"></div>
+
+  <!-- Floating Embed Navigation Bar -->
+  <div class="floating-embed-bar">
+    <button class="embed-btn" onclick="embedApp.viewer.fitViewport()" title="Auto-Fit">
+      <i class="bi bi-arrows-fullscreen"></i>
+    </button>
+    <button class="embed-btn" onclick="embedApp.viewer.zoomIn()" title="Zoom In">
+      <i class="bi bi-zoom-in"></i>
+    </button>
+    <button class="embed-btn" onclick="embedApp.viewer.zoomOut()" title="Zoom Out">
+      <i class="bi bi-zoom-out"></i>
+    </button>
+    <div class="vr mx-1 opacity-25"></div>
+    <a id="btn-direct-svg" href="#" target="_blank" class="embed-btn" title="View Direct SVG Image">
+      <i class="bi bi-image text-primary"></i> Direct SVG
+    </a>
+    <a id="btn-open-app" href="#" target="_blank" class="embed-btn fw-bold text-primary" title="Open in BPMN Architect">
+      <i class="bi bi-box-arrow-up-right"></i> Open
+    </a>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../assets/vendor/bpmn-js/bpmn-navigated-viewer.production.min.js"></script>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/api-client.js"></script>
+  <script src="../assets/js/viewer.js"></script>
+
+  <script>
+    class EmbedApp {
+      constructor() {
+        this.api = null;
+        this.viewer = null;
+        this.diagramId = null;
+      }
+
+      async init() {
+        const config = await window.BPMN_APP.loadConfig();
+        this.api = new BPMNApiClient(config);
+
+        this.diagramId = window.BPMN_APP.getQueryParam("id");
+        if (!this.diagramId) {
+          document.getElementById("bpmn-canvas").innerHTML = `
+            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+              Missing 'id' parameter in embed URL.
+            </div>
+          `;
+          return;
+        }
+
+        // Setup links
+        document.getElementById("btn-direct-svg").href = `${this.api.baseUrl}/api/diagram/${encodeURIComponent(this.diagramId)}/svg`;
+        document.getElementById("btn-open-app").href = `../view/?id=${encodeURIComponent(this.diagramId)}`;
+
+        const container = document.getElementById("bpmn-canvas");
+        this.viewer = new BPMNViewerWrapper(container);
+
+        try {
+          const xml = await this.api.fetchDiagramXml(this.diagramId);
+          await this.viewer.loadXml(xml);
+        } catch (err) {
+          container.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center h-100 text-danger small">
+              Failed to load diagram: ${err.message}
+            </div>
+          `;
+        }
+      }
+    }
+
+    const embedApp = new EmbedApp();
+    document.addEventListener("DOMContentLoaded", () => embedApp.init());
+  </script>
+</body>
+</html>
+

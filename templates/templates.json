@@ -1,0 +1,35 @@
+[
+  {
+    "id": "blank",
+    "name": "Blank Canvas",
+    "category": "Basic",
+    "description": "Start with an empty diagram containing only a single Start event.",
+    "icon": "bi-square",
+    "file": "templates/samples/blank.bpmn"
+  },
+  {
+    "id": "linear",
+    "name": "Standard Linear Workflow",
+    "category": "Basic",
+    "description": "Sequential task execution flow connecting a Start Event to an Action Task and End Event.",
+    "icon": "bi-arrow-right",
+    "file": "templates/samples/linear.bpmn"
+  },
+  {
+    "id": "approval",
+    "name": "Two-Stage Approval Process",
+    "category": "Business",
+    "description": "Decision gate with an Exclusive Gateway splitting into Approved and Rejected pathways.",
+    "icon": "bi-check2-circle",
+    "file": "templates/samples/approval.bpmn"
+  },
+  {
+    "id": "service-integration",
+    "name": "Automated Service Integration",
+    "category": "Technical",
+    "description": "API service invocation with timer delay and message catch event.",
+    "icon": "bi-cpu",
+    "file": "templates/samples/service-integration.bpmn"
+  }
+]
+
